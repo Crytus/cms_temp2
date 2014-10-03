@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="content-script-Type" content="text/javascript" />
+<title>管理者画面</title>
+<LINK rel="stylesheet" href="css/admin.css" type="text/css" media="screen" />
+<script type="text/javascript">
+{literal}
+function do_delete()
+{
+	if (confirm("全てのデータを削除します。よろしいですか？")) {
+{/literal}
+		window.location = '?act={$form.name}_delete';
+{literal}
+	}
+}
+function file_search()
+{
+	str = "files.php?act=filesearch";
+	child = window.open(str, "filesearch", "width=400, height=370");
+	child.caller = this;
+	child.result = document.form1.name;
+}
+{/literal}
+</script>
+</head>
+
+<body>
+
+<div id="layout">
+
+{include file="common/header.tpl"}
+
+
+<div id="main" class="clearfix">
+
+<div class="top">
+<h2>{$form.title}アップロード・読み込み</h2>
+</div>
+
+<div class="box">
+
+<div class="submenu">&nbsp;</div>
+
+
+<div class="cts">
+
+{if $message}
+<div class="error">{$message}</div>
+{/if}
+
+<form name="form1" enctype="multipart/form-data" method="post" action="?act={$form.name}_uploadcsv">
+<input type="hidden" id="mode" name="mode" value="{$mode}">
+
+<table width="100%" border="0" cellpadding="0" cellspacing="1">
+<tr>
+<th>アップロードCSV</th>
+<td><input type="file" name="upload"></td>
+</tr>
+<tr>
+<th></th>
+<td>
+<input type="submit" value="アップロード">&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{include file="common/footer.tpl"}
+
+</div>
+</body>
+</html>

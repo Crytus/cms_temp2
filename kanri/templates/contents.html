@@ -1,0 +1,668 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="content-script-Type" content="text/javascript" />
+<title>管理者画面</title>
+<LINK rel="stylesheet" href="css/admin.css" type="text/css" media="screen" />
+<script type="text/javascript" src="js/prototype-1.6.0.3.js"></script>
+<script type="text/javascript" src="js/mini_ajax.js"></script>
+<script src="http://maps.google.com/maps?file=api&amp;v=3" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+<!--
+{literal}
+function delete_conf(id)
+{
+	if (confirm("削除してもよろしいですか？")) {
+{/literal}
+		window.location = '?act={$item_form.name}_delete&id=' + id;
+{literal}
+	}
+}
+function do_page(page)
+{
+{/literal}
+	location = '?act={$item_form.name}_edit&id={$id}&page=' + page;
+{literal}
+}
+function do_hide(items, btn)
+{
+	var i, item;
+	var open = 0;
+	ary = items.split(',');
+	for (i = 0; i < ary.length; i++) {
+		item = document.getElementById("tr_" + ary[i]);
+		if (item) {
+			if (item.style.display == "none") {
+				item.style.display = "";
+				open = 1;
+			} else {
+				item.style.display = "none";
+			}
+		}
+	}
+ 	item = document.getElementById(btn);
+	if (open) {
+		item.src = 'open.gif';
+	} else {
+		item.src = 'close.gif';
+	}
+}
+function today(year, month, day)
+{
+	var d = new Date();
+	document.getElementById(year).value = d.getFullYear();
+	if (d.getMonth() < 9) {
+		document.getElementById(month).value = '0' + (d.getMonth() + 1);
+	} else {
+		document.getElementById(month).value = d.getMonth() + 1;
+	}
+	document.getElementById(day).value = d.getDate();
+}
+{/literal}
+//-->
+</script>
+</head>
+
+<body>
+
+<div id="layout">
+
+{include file="common/header.tpl"}
+
+<div id="main" class="clearfix">
+<div class="top">
+<h2>{$page_title}</h2>
+</div>
+<div class="box">
+
+<div class="submenu">
+{if $list_menu}
+<a href="?act={$form.name}">{$form.title}</a> > 登録・編集
+{/if}
+&nbsp;</div>
+
+<div class="cts">
+<!--中身-->
+
+<form name="form1" enctype="multipart/form-data" method="post" action="?act={$form.name}_update">
+<input type="hidden" id="mode" name="mode" value="{$mode}">
+<input type="hidden" id="id" name="id" value="{$id}">
+<input type="hidden" id="page" name="_page_" value="{$_page_}">
+
+{if $message}
+<div class="error">{$message}</div>
+{/if}
+
+
+<table id="tb_{$item.name}" width="100%" border="0" cellpadding="0" cellspacing="1">
+{foreach from=$list item="item"}
+{if $item.hidden}
+<input type="hidden" id="{$item.name}" name="{$item.name}" value="{$item.value}">
+{else}
+<tr id="tr_{$item.name}">
+{if $item.comment}
+{if $item.title}
+<th id="th_{$item.name}" colspan="2" width="100%">
+{if $item.hide}<p style="float:left"><a href="javascript:do_hide('{$item.hide}','btn_{$item.name}')"><img id="btn_{$item.name}" src="close.gif" boarder="0"></a></p>{/if}{if $item.require}<p class="require">※</p>{/if}{$item.title}
+</th>
+{else}
+<th id="td_{$item.name}" colspan="2" width="100%"><hr></th>
+{/if}
+{else}
+<th id="th_{$item.name}" width="20%">{if $item.require}<p class="require">※</p>{/if}{$item.title}</th>
+<td id="td_{$item.name}" width="100%">
+{if $item.text}
+<input type="text" id="{$item.name}" name="{$item.name}" value="{$item.value}" maxlength="{$item.length}" size="70"{if $item.disable} disabled="disabled"{/if}>
+{/if}
+
+{if $item.textarea}
+<textarea id="{$item.name}" name="{$item.name}" {if $item.cols}cols="{$item.cols}"{else}cols="60"{/if} {if $item.rows}rows="{$item.rows}"{else}rows="10"{/if}{if $item.disable} disabled="disabled"{/if}>{$item.value}</textarea>
+{/if}
+
+{if $item.image}
+{if $item.value}
+<a href="../img.php?id={$item.value}" target="_blank"><img src="../img.php?id={$item.value}&x=200"></a>
+<br />
+<label><input type="checkbox" id="{$item.name}" name="{$item.name}_del" value="{$item.value}"> この画像を削除</label>
+<input type="hidden" id="{$item.name}_old" name="{$item.name}_old" value="{$item.value}">
+<br />
+{/if}
+<input type="file" id="{$item.name}" name="{$item.name}" size="50">
+{/if}
+
+{if $item.display}
+{$item.value}
+{/if}
+
+{if $item.image_file}
+{if $item.value}
+<img id="{$item.name}_img" src="{$item.value}" width="200"><br>
+{/if}
+<input type="text" id="{$item.name}" name="{$item.name}" value="{$item.value}" size="50">(画像のURL)
+{/if}
+
+{if $item.select}
+<input type="hidden" name="{$item.name}_value" id="{$item.name}_value" value="{$item.value}">
+<select id="{$item.name}" name="{$item.name}"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+{foreach from=$item.list item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>
+{/if}
+
+{if $item.radio}
+{foreach from=$item.list item="item2"}
+<label><input type="radio" id="{$item2.name}_{$item2.value}" name="{$item.name}" value="{$item2.value}" {$item2.sel}{if $item.disable} disabled="disabled"{/if}>{$item2.name}</label>&nbsp;&nbsp;
+{/foreach}
+{/if}
+
+{if $item.checkbox}
+{if $item.list}
+{foreach from=$item.list item="item2"}
+<label><input type="checkbox" id="{$item2.key}" name="{$item2.key}" value="{$item2.value}" {$item2.sel}{if $item.disable} disabled="disabled"{/if}>{$item2.name}</label>
+{/foreach}
+{/if}
+{if !$item.list}
+<input type="checkbox" id="{$item.name}" name="{$item.name}" value="{$item.value}" {$item.checked}{if $item.disable} disabled="disabled"{/if}>
+{/if}
+{/if}
+
+{if $item.reference}
+{if !$item.select}
+{if $item.link}
+<a href="{$item.link}{$item.value}">{$item.reference_value}</a>
+{/if}
+{if !$item.link}
+{$item.reference_value}
+{/if}
+<input type="hidden" id="{$item.name}" name="{$item.name}" value="{$item.value}">
+{/if}
+{/if}
+
+{if $item.link}
+<a href="{$item.link}{$item.value}">{$item.name}</a>
+{/if}
+
+{if $item.date}
+<input type="text" id="{$item.name}_year" name="{$item.name}_year" value="{$item.value/year}" {$item.list/sel_year}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_month" name="{$item.name}_month" value="{$item.value/month}" {$item.list/sel_year}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_day" name="{$item.name}_day" value="{$item.value/day}" {$item.list/sel_year}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+{/if}
+{if $item.date_sel}
+<select id="{$item.name}_year" name="{$item.name}_year"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+{foreach from=$item.years item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.value}</option>
+{/foreach}
+</select> 年&nbsp;
+<select id="{$item.name}_month" name="{$item.name}_month"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="01" {$item.month01}>1</option>
+<option value="02" {$item.month02}>2</option>
+<option value="03" {$item.month03}>3</option>
+<option value="04" {$item.month04}>4</option>
+<option value="05" {$item.month05}>5</option>
+<option value="06" {$item.month06}>6</option>
+<option value="07" {$item.month07}>7</option>
+<option value="08" {$item.month08}>8</option>
+<option value="09" {$item.month09}>9</option>
+<option value="10" {$item.month10}>10</option>
+<option value="11" {$item.month11}>11</option>
+<option value="12" {$item.month12}>12</option>
+</select> 月&nbsp;
+<select id="{$item.name}_day" name="{$item.name}_day"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="01" {$item.day01}>1</option>
+<option value="02" {$item.day02}>2</option>
+<option value="03" {$item.day03}>3</option>
+<option value="04" {$item.day04}>4</option>
+<option value="05" {$item.day05}>5</option>
+<option value="06" {$item.day06}>6</option>
+<option value="07" {$item.day07}>7</option>
+<option value="08" {$item.day08}>8</option>
+<option value="09" {$item.day09}>9</option>
+<option value="10" {$item.day10}>10</option>
+<option value="11" {$item.day11}>11</option>
+<option value="12" {$item.day12}>12</option>
+<option value="13" {$item.day13}>13</option>
+<option value="14" {$item.day14}>14</option>
+<option value="15" {$item.day15}>15</option>
+<option value="16" {$item.day16}>16</option>
+<option value="17" {$item.day17}>17</option>
+<option value="18" {$item.day18}>18</option>
+<option value="19" {$item.day19}>19</option>
+<option value="20" {$item.day20}>20</option>
+<option value="21" {$item.day21}>21</option>
+<option value="22" {$item.day22}>22</option>
+<option value="23" {$item.day23}>23</option>
+<option value="24" {$item.day24}>24</option>
+<option value="25" {$item.day25}>25</option>
+<option value="26" {$item.day26}>26</option>
+<option value="27" {$item.day27}>27</option>
+<option value="28" {$item.day28}>28</option>
+<option value="29" {$item.day29}>29</option>
+<option value="30" {$item.day30}>30</option>
+<option value="31" {$item.day31}>31</option>
+</select> 日
+{if $item.today}
+<input type="button" value=" 本日 " onClick="today('{$item.name}_year', '{$item.name}_month', '{$item.name}_day')">
+{/if}
+{/if}
+{if $item.yearmonth_sel}
+<select id="{$item.name}_year" name="{$item.name}_year"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+{foreach from=$item.years item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.value}</option>
+{/foreach}
+</select> 年&nbsp;
+<select id="{$item.name}_month" name="{$item.name}_month"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="01" {$item.month01}>1</option>
+<option value="02" {$item.month02}>2</option>
+<option value="03" {$item.month03}>3</option>
+<option value="04" {$item.month04}>4</option>
+<option value="05" {$item.month05}>5</option>
+<option value="06" {$item.month06}>6</option>
+<option value="07" {$item.month07}>7</option>
+<option value="08" {$item.month08}>8</option>
+<option value="09" {$item.month09}>9</option>
+<option value="10" {$item.month10}>10</option>
+<option value="11" {$item.month11}>11</option>
+<option value="12" {$item.month12}>12</option>
+</select> 月
+{/if}
+
+{if $item.time}
+<input type="text" id="{$item.name}_hour" name="{$item.name}_hour" value="{$item.value/hour}" {$item.list/sel_hour}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_min" name="{$item.name}_min" value="{$item.value/min}" {$item.list/sel_min}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+{/if}
+{if $item.time_sel}
+<select id="{$item.name}_hour" name="{$item.name}_hour"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="00" {$item.hour00}>00</option>
+<option value="01" {$item.hour01}>01</option>
+<option value="02" {$item.hour02}>02</option>
+<option value="03" {$item.hour03}>03</option>
+<option value="04" {$item.hour04}>04</option>
+<option value="05" {$item.hour05}>05</option>
+<option value="06" {$item.hour06}>06</option>
+<option value="07" {$item.hour07}>07</option>
+<option value="08" {$item.hour08}>08</option>
+<option value="09" {$item.hour09}>09</option>
+<option value="10" {$item.hour10}>10</option>
+<option value="11" {$item.hour11}>11</option>
+<option value="12" {$item.hour12}>12</option>
+<option value="13" {$item.hour13}>13</option>
+<option value="14" {$item.hour14}>14</option>
+<option value="15" {$item.hour15}>15</option>
+<option value="16" {$item.hour16}>16</option>
+<option value="17" {$item.hour17}>17</option>
+<option value="18" {$item.hour18}>18</option>
+<option value="19" {$item.hour19}>19</option>
+<option value="20" {$item.hour20}>20</option>
+<option value="21" {$item.hour21}>21</option>
+<option value="22" {$item.hour22}>22</option>
+<option value="23" {$item.hour23}>23</option>
+</select> 時&nbsp;
+<select id="{$item.name}_min" name="{$item.name}_min"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="00" {$item.min00}>00</option>
+<option value="01" {$item.min01}>01</option>
+<option value="02" {$item.min02}>02</option>
+<option value="03" {$item.min03}>03</option>
+<option value="04" {$item.min04}>04</option>
+<option value="05" {$item.min05}>05</option>
+<option value="06" {$item.min06}>06</option>
+<option value="07" {$item.min07}>07</option>
+<option value="08" {$item.min08}>08</option>
+<option value="09" {$item.min09}>09</option>
+<option value="10" {$item.min10}>10</option>
+<option value="11" {$item.min11}>11</option>
+<option value="12" {$item.min12}>12</option>
+<option value="13" {$item.min13}>13</option>
+<option value="14" {$item.min14}>14</option>
+<option value="15" {$item.min15}>15</option>
+<option value="16" {$item.min16}>16</option>
+<option value="17" {$item.min17}>17</option>
+<option value="18" {$item.min18}>18</option>
+<option value="19" {$item.min19}>19</option>
+<option value="20" {$item.min20}>20</option>
+<option value="21" {$item.min21}>21</option>
+<option value="22" {$item.min22}>22</option>
+<option value="23" {$item.min23}>23</option>
+<option value="24" {$item.min24}>24</option>
+<option value="25" {$item.min25}>25</option>
+<option value="26" {$item.min26}>26</option>
+<option value="27" {$item.min27}>27</option>
+<option value="28" {$item.min28}>28</option>
+<option value="29" {$item.min29}>29</option>
+<option value="30" {$item.min30}>30</option>
+<option value="31" {$item.min31}>31</option>
+<option value="32" {$item.min32}>32</option>
+<option value="33" {$item.min33}>33</option>
+<option value="34" {$item.min34}>34</option>
+<option value="35" {$item.min35}>35</option>
+<option value="36" {$item.min36}>36</option>
+<option value="37" {$item.min37}>37</option>
+<option value="38" {$item.min38}>38</option>
+<option value="39" {$item.min39}>39</option>
+<option value="40" {$item.min40}>40</option>
+<option value="41" {$item.min41}>41</option>
+<option value="42" {$item.min42}>42</option>
+<option value="43" {$item.min43}>43</option>
+<option value="44" {$item.min44}>44</option>
+<option value="45" {$item.min45}>45</option>
+<option value="46" {$item.min46}>46</option>
+<option value="47" {$item.min47}>47</option>
+<option value="48" {$item.min48}>48</option>
+<option value="49" {$item.min49}>49</option>
+<option value="50" {$item.min50}>50</option>
+<option value="51" {$item.min51}>51</option>
+<option value="52" {$item.min52}>52</option>
+<option value="53" {$item.min53}>53</option>
+<option value="54" {$item.min54}>54</option>
+<option value="55" {$item.min55}>55</option>
+<option value="56" {$item.min56}>56</option>
+<option value="57" {$item.min57}>57</option>
+<option value="58" {$item.min58}>58</option>
+<option value="59" {$item.min59}>59</option>
+</select> 分&nbsp;
+{/if}
+{if $item.datetime}
+<input type="text" id="{$item.name}_year" name="{$item.name}_year" value="{$item.value.year}" {$item.list.sel_year}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_month" name="{$item.name}_month" value="{$item.value.month}" {$item.list.sel_year}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_day" name="{$item.name}_day" value="{$item.value.day}" {$item.list.sel_year}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_hour" name="{$item.name}_hour" value="{$item.value.hour}" {$item.list.sel_hour}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+<input type="text" id="{$item.name}_min" name="{$item.name}_min" value="{$item.value.min}" {$item.list.sel_min}{if $item.disable} disabled="disabled"{/if}>&nbsp;
+{/if}
+{if $item.datetime_sel}
+<select id="{$item.name}_year" name="{$item.name}_year"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+{foreach from=$item.years item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.value}</option>
+{/foreach}
+</select> 年&nbsp;
+<select id="{$item.name}_month" name="{$item.name}_month"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="01" {$item.month01}>1</option>
+<option value="02" {$item.month02}>2</option>
+<option value="03" {$item.month03}>3</option>
+<option value="04" {$item.month04}>4</option>
+<option value="05" {$item.month05}>5</option>
+<option value="06" {$item.month06}>6</option>
+<option value="07" {$item.month07}>7</option>
+<option value="08" {$item.month08}>8</option>
+<option value="09" {$item.month09}>9</option>
+<option value="10" {$item.month10}>10</option>
+<option value="11" {$item.month11}>11</option>
+<option value="12" {$item.month12}>12</option>
+</select> 月&nbsp;
+<select id="{$item.name}_day" name="{$item.name}_day"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="01" {$item.day01}>1</option>
+<option value="02" {$item.day02}>2</option>
+<option value="03" {$item.day03}>3</option>
+<option value="04" {$item.day04}>4</option>
+<option value="05" {$item.day05}>5</option>
+<option value="06" {$item.day06}>6</option>
+<option value="07" {$item.day07}>7</option>
+<option value="08" {$item.day08}>8</option>
+<option value="09" {$item.day09}>9</option>
+<option value="10" {$item.day10}>10</option>
+<option value="11" {$item.day11}>11</option>
+<option value="12" {$item.day12}>12</option>
+<option value="13" {$item.day13}>13</option>
+<option value="14" {$item.day14}>14</option>
+<option value="15" {$item.day15}>15</option>
+<option value="16" {$item.day16}>16</option>
+<option value="17" {$item.day17}>17</option>
+<option value="18" {$item.day18}>18</option>
+<option value="19" {$item.day19}>19</option>
+<option value="20" {$item.day20}>20</option>
+<option value="21" {$item.day21}>21</option>
+<option value="22" {$item.day22}>22</option>
+<option value="23" {$item.day23}>23</option>
+<option value="24" {$item.day24}>24</option>
+<option value="25" {$item.day25}>25</option>
+<option value="26" {$item.day26}>26</option>
+<option value="27" {$item.day27}>27</option>
+<option value="28" {$item.day28}>28</option>
+<option value="29" {$item.day29}>29</option>
+<option value="30" {$item.day30}>30</option>
+<option value="31" {$item.day31}>31</option>
+</select> 日
+<select id="{$item.name}_hour" name="{$item.name}_hour"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="00" {$item.hour00}>00</option>
+<option value="01" {$item.hour01}>01</option>
+<option value="02" {$item.hour02}>02</option>
+<option value="03" {$item.hour03}>03</option>
+<option value="04" {$item.hour04}>04</option>
+<option value="05" {$item.hour05}>05</option>
+<option value="06" {$item.hour06}>06</option>
+<option value="07" {$item.hour07}>07</option>
+<option value="08" {$item.hour08}>08</option>
+<option value="09" {$item.hour09}>09</option>
+<option value="10" {$item.hour10}>10</option>
+<option value="11" {$item.hour11}>11</option>
+<option value="12" {$item.hour12}>12</option>
+<option value="13" {$item.hour13}>13</option>
+<option value="14" {$item.hour14}>14</option>
+<option value="15" {$item.hour15}>15</option>
+<option value="16" {$item.hour16}>16</option>
+<option value="17" {$item.hour17}>17</option>
+<option value="18" {$item.hour18}>18</option>
+<option value="19" {$item.hour19}>19</option>
+<option value="20" {$item.hour20}>20</option>
+<option value="21" {$item.hour21}>21</option>
+<option value="22" {$item.hour22}>22</option>
+<option value="23" {$item.hour23}>23</option>
+</select> 時&nbsp;
+<select id="{$item.name}_min" name="{$item.name}_min"{if $item.disable} disabled="disabled"{/if}>
+<option value=""></option>
+<option value="00" {$item.min00}>00</option>
+<option value="01" {$item.min01}>01</option>
+<option value="02" {$item.min02}>02</option>
+<option value="03" {$item.min03}>03</option>
+<option value="04" {$item.min04}>04</option>
+<option value="05" {$item.min05}>05</option>
+<option value="06" {$item.min06}>06</option>
+<option value="07" {$item.min07}>07</option>
+<option value="08" {$item.min08}>08</option>
+<option value="09" {$item.min09}>09</option>
+<option value="10" {$item.min10}>10</option>
+<option value="11" {$item.min11}>11</option>
+<option value="12" {$item.min12}>12</option>
+<option value="13" {$item.min13}>13</option>
+<option value="14" {$item.min14}>14</option>
+<option value="15" {$item.min15}>15</option>
+<option value="16" {$item.min16}>16</option>
+<option value="17" {$item.min17}>17</option>
+<option value="18" {$item.min18}>18</option>
+<option value="19" {$item.min19}>19</option>
+<option value="20" {$item.min20}>20</option>
+<option value="21" {$item.min21}>21</option>
+<option value="22" {$item.min22}>22</option>
+<option value="23" {$item.min23}>23</option>
+<option value="24" {$item.min24}>24</option>
+<option value="25" {$item.min25}>25</option>
+<option value="26" {$item.min26}>26</option>
+<option value="27" {$item.min27}>27</option>
+<option value="28" {$item.min28}>28</option>
+<option value="29" {$item.min29}>29</option>
+<option value="30" {$item.min30}>30</option>
+<option value="31" {$item.min31}>31</option>
+<option value="32" {$item.min32}>32</option>
+<option value="33" {$item.min33}>33</option>
+<option value="34" {$item.min34}>34</option>
+<option value="35" {$item.min35}>35</option>
+<option value="36" {$item.min36}>36</option>
+<option value="37" {$item.min37}>37</option>
+<option value="38" {$item.min38}>38</option>
+<option value="39" {$item.min39}>39</option>
+<option value="40" {$item.min40}>40</option>
+<option value="41" {$item.min41}>41</option>
+<option value="42" {$item.min42}>42</option>
+<option value="43" {$item.min43}>43</option>
+<option value="44" {$item.min44}>44</option>
+<option value="45" {$item.min45}>45</option>
+<option value="46" {$item.min46}>46</option>
+<option value="47" {$item.min47}>47</option>
+<option value="48" {$item.min48}>48</option>
+<option value="49" {$item.min49}>49</option>
+<option value="50" {$item.min50}>50</option>
+<option value="51" {$item.min51}>51</option>
+<option value="52" {$item.min52}>52</option>
+<option value="53" {$item.min53}>53</option>
+<option value="54" {$item.min54}>54</option>
+<option value="55" {$item.min55}>55</option>
+<option value="56" {$item.min56}>56</option>
+<option value="57" {$item.min57}>57</option>
+<option value="58" {$item.min58}>58</option>
+<option value="59" {$item.min59}>59</option>
+</select> 分&nbsp;
+{/if}
+{if $item.gmap}
+<style type="text/css">
+#{$item.name}
+{literal}
+{
+	border: solid 1px #666666;
+	width: 365px;
+	height: 250px;
+}
+{/literal}
+</style>
+<div id="{$item.name}"></div>
+<input type="text" id="{$item.name}_lat" name="{$item.name}_lat" value="{$item.value.lat}">
+<input type="text" id="{$item.name}_lon" name="{$item.name}_lon" value="{$item.value.lon}">
+<input type="text" id="{$item.name}_zoom" name="{$item.name}_zoom" value="{$item.value.zoom}">
+<input type="button" id="{$item.name}_btn" name="{$item.name}_btn" value="設定">
+{/if}
+
+{if $item.message}
+<div class="error">{$item.message}</div>
+{/if}
+
+{if $item.buttons}
+<div class="buttons">
+{foreach from=$item.buttons item="item2"}
+<input type="button" name="{$item2.name}" id="{$item2.name}" value="{$item2.title}">&nbsp;&nbsp;
+{/foreach}
+</div>
+{/if}
+
+{if $item.info}
+<div class="comment" id="{$item.name}_comment">{$item.info}</div>
+{/if}
+
+</td>
+ {/if}
+</tr>
+{/if}
+{/foreach}
+<tr>
+<th width="20%">&nbsp;</th>
+<td>
+{if !$nosave}
+<input type="submit" value=" 保存 ">
+{/if}
+{foreach from=$buttons item="item"}
+{if $item.act}
+&nbsp;<input type="button" value="{$item.name}" onClick="window.location='{$item.act}{$id}'">
+{/if}
+{if $item.onclick}
+&nbsp;<input type="button" value="{$item.name}" onClick="{$item.onclick}">
+{/if}
+{if $item.info}
+<span class="error">{$item.info}</div>
+{/if}
+{/foreach}
+</td>
+</tr>
+</table>
+
+</form>
+
+{if $item_form}
+{if !$item_form.nonew}
+<a href="?act={$item_form.name}_new">{$item_form.title}新規追加</a>
+{/if}
+{/if}
+
+{if $item_list}
+<br/>
+<table width="100%" border="0" cellpadding="0" cellspacing="1">
+<tr>
+{foreach from=$title item="item"}
+<th width="20%">{$item.title}</th>
+{/foreach}
+<th width="20%">&nbsp;</th>
+</tr>
+{foreach from=$item_list item="item"}
+<tr>
+{foreach from=$item.items item="item2"}
+<td>{$item2}</td>
+{/foreach}
+<td>
+{if $item_form.preview}
+<a href="{$top}{$item_form.preview}{$item.id}" target="_blank">[プレビュー]</a>&nbsp;&nbsp;
+{/if}
+{foreach from=$item_buttons item="item2"}
+<input type="button" value="{$item2.name}" onClick="window.location='{$item2.act}{$item.id}'">&nbsp;
+{/foreach}
+<input type="button" value="編集" onClick="window.location='?act={$item_form.name}_edit&id={$item.id}'">&nbsp;
+<input type="button" value="削除" onClick="delete_conf({$item.id})">
+</td>
+</tr>
+{/foreach}
+</table>
+{/if}
+
+{if $item_pager}
+<br/>
+{if $item_pager.prev}
+<a href="javascript:do_page({$item_pager.prev.no})"><< 前へ</a> |
+{else}
+<< 前へ |
+{/if}
+{foreach from=$item_pager.list item="item2"}
+{if $$item2.link}
+<a href="javascript:do_page({$item2.no})">[{$item2.name}]</a> |
+{else}
+[{$item2.name}] |
+{/if}
+{/foreach}
+{if $item_pager.next}
+<a href="javascript:do_page({$item_pager.next.no})">次へ >></a>
+{else}
+次へ >>
+{/if}
+{/if}
+
+
+<!--中身-->
+</div>
+</div>
+<div class="btm clearfix"></div>
+</div><!--main-->
+
+{include file="common/footer.tpl"}
+
+</div>
+{if $script}
+{foreach from=$script item="item"}
+<script type="text/javascript" src="{$item}" charset="utf-8"></script>
+{/foreach}
+{/if}
+<script type="text/javascript">
+{foreach from=$list item="item"}
+{if $item.hide}do_hide('{$item.hide}','btn_{$item.name}');{/if}
+{/foreach}
+</script>
+</body>
+</html>

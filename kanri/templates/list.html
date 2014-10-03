@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="content-script-Type" content="text/javascript" />
+<title>管理者画面</title>
+<LINK rel="stylesheet" href="css/admin.css" type="text/css" media="screen" />
+<script type="text/javascript">
+<!--
+{literal}
+function delete_conf(id)
+{
+	if (confirm("削除してもよろしいですか？")) {
+{/literal}
+		window.location = '?act={$form.name}_delete&id=' + id;
+{literal}
+	}
+}
+function do_page(page)
+{
+	document.form1.page.value = page;
+	document.form1.submit();
+}
+function do_sort(key, ord)
+{
+	document.form1.page.value = 0;
+	if (document.form1._sort_.value == key) {
+		if (ord == "asc") {
+			document.form1._order_.value = "desc";
+		} else {
+			document.form1._order_.value = "asc";
+		}
+	} else {
+		document.form1._order_.value = "asc";
+	}
+	document.form1._sort_.value = key;
+	document.form1.submit();
+}
+{/literal}
+//-->
+</script>
+</head>
+
+<body>
+
+<div id="layout">
+
+{include file="common/header.tpl"}
+
+<div id="main" class="clearfix">
+
+<div class="top">
+<h2>{$page_title}</h2>
+</div>
+
+<div class="box">
+
+<div class="submenu">
+{$form.title}
+&nbsp;
+{if !$form.nonew}
+<!--div style="float:right"><a href="?act={$form.name}_new">新規追加</a></div-->
+<div style="float:right;"><input type="button" value=" 新規追加 " onClick="location='?act={$form.name}_new'"></div>
+{/if}
+</div>
+
+<div class="cts">
+<!--中身-->
+
+{if !$form.nonew}
+<!--a href="?act={$form.name}_new">新規追加</a-->
+{/if}
+
+{if $message}
+<div class="error">{$message}</div>
+{/if}
+
+<form name="form1" method="get">
+<input type="hidden" name="act" value="{$form.name}_list">
+<input type="hidden" name="page" value="">
+<input type="hidden" name="_sort_" value="{$sort.key}">
+<input type="hidden" name="_order_" value="{$sort.ord}">
+{if $search}
+<table width="100%" border="0" cellpadding="0" cellspacing="1">
+{foreach from=$search item="item"}
+<tr>
+<th>{$item.title}</th>
+<td>
+{if $item.text}
+<input type="text" name="{$item.name}" value="{$item.value}" size="40">
+{/if}
+{if $item.select}
+<input type="hidden" name="{$itm.name}_value" id="{$item.name}_value" value="{$item.value}">
+<select id="{$item.name}" name="{$item.name}">
+<option value=""></option>
+{foreach from=$item.list item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>
+{/if}
+{if $item.date_period}
+<select name="{$item.name}_yearfrom">
+<option value=""></option>
+{foreach from=$item.yearfrom item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>/
+<select name="{$item.name}_monthfrom">
+<option value=""></option>
+{foreach from=$item.monthfrom item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>/
+<select name="{$item.name}_dayfrom">
+<option value=""></option>
+{foreach from=$item.dayfrom item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>～
+<select name="{$item.name}_yearto">
+<option value=""></option>
+{foreach from=$item.yearto item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>/
+<select name="{$item.name}_monthto">
+<option value=""></option>
+{foreach from=$item.monthto item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>/
+<select name="{$item.name}_dayto">
+<option value=""></option>
+{foreach from=$item.dayto item="item2"}
+<option value="{$item2.value}" {$item2.sel}>{$item2.name}</option>
+{/foreach}
+</select>
+{/if}
+{if $item.range}
+<input type="text" name="{$item.name}_min" value="{$item.value_min}" size="20"> ～ 
+<input type="text" name="{$item.name}_max" value="{$item.value_max}" size="20">
+{/if}
+{if $item.info}
+<br>
+{$item.info}
+{/if}
+</td>
+</tr>
+{/foreach}
+<tr>
+<th>&nbsp;</th>
+<td>
+<input type="button" value="検索" onClick="document.form1.act.value='{$form.name}_list';document.form1.submit()">&nbsp;&nbsp;
+{if $csv}
+<input type="button" value="CSV出力" onClick="document.form1.act.value='{$form.name}_csv';document.form1.submit()">&nbsp;&nbsp;
+{/if}
+</td>
+</tr>
+</table>
+<br/>
+{/if}
+</form>
+{if $count}{$start} ～ {$end}　{$count} 件中{/if}
+<table width="100%" border="0" cellpadding="0" cellspacing="1" class="list">
+<tr>
+{foreach from=$title item="item"}
+<th>{if $item.sort}<a href="javascript:do_sort('{$item.sort.key}', '{$item.sort.ord}')">{if $item.sort.ord=="asc"}▲{/if}{if $item.sort.ord=="desc"}▼{/if}{if $item.sort.ord==""}△{/if}</a>&nbsp;&nbsp;{/if}{$item.title}</th>
+{/foreach}
+<th>&nbsp;</th>
+</tr>
+{foreach from=$list item="item"}
+<tr class="{$item.rowclass}">
+{foreach from=$item.items item="item2"}
+<td>{$item2}</td>
+{/foreach}
+<td>
+{if $form.preview}
+<a href="{$top}{$form.preview}{$item.id}" target="_blank">[プレビュー]</a>&nbsp;&nbsp;
+{/if}
+{if !$item.nobuttons}
+{foreach from=$buttons item="item2"}
+<input type="button" value="{$item2.name}" onClick="window.location='{$item2.act}{$item.id}'">&nbsp;
+{/foreach}
+{/if}
+{if !$nobuttons}
+<input type="button" value="編集" onClick="window.location='?act={$form.name}_edit&id={$item.id}&page={$page}'">&nbsp;
+<input type="button" value="削除" onClick="delete_conf({$item.id})">
+{/if}
+</td>
+</tr>
+{/foreach}
+</table>
+
+{if $pager}
+<br/>
+{if $pager.prev}
+<a href="javascript:do_page({$pager.prev.no})"><< 前へ</a> |
+{else}
+<< 前へ |
+{/if}
+{if $pager.prev_skip}
+ <a href="javascript:do_page(0)">[先頭]</a>  ･･･ 
+{/if}
+{foreach from=$pager.list item="item"}
+{if $item.link}
+<a href="javascript:do_page({$item.no})">[{$item.name}]</a> |
+{else}
+[{$item.name}] |
+{/if}
+{/foreach}
+{if $pager.next_skip}
+ ･･･  <a href="javascript:do_page(99999)">[最後]</a> |
+{/if}
+{if $pager.next}
+<a href="javascript:do_page({$pager.next.no})">次へ >></a>
+{else}
+次へ >>
+{/if}
+{/if}
+
+<!--中身-->
+</div>
+
+
+</div>
+
+<div class="btm clearfix">
+</div>
+
+</div><!--main-->
+
+{include file="common/footer.tpl"}
+
+</div>
+{if $script}
+{foreach from=$script item="item"}
+<script type="text/javascript" src="{$item}"></script>
+{/foreach}
+{/if}
+</body>
+</html>
